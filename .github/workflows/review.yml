@@ -1,0 +1,31 @@
+name: Code Review AI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get diff
+        run: |
+          git diff origin/${{ github.event.pull_request.base.ref }} --unified=3 > diff.patch
+
+      - name: Call review API
+        id: review
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:4589/review/webhook \
+            -H "Content-Type: application/json" \
+            -d "{\"diff\":\"$(sed 's/\"/\\"/g' diff.patch)\"}")
+          echo "result=$RESPONSE" >> $GITHUB_OUTPUT
+
+      - name: Post result to PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
+            -f body="${{ steps.review.outputs.result }}"
