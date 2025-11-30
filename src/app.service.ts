@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import OpenAI from "openai";
+import { promptText } from './prompt';
 
 @Injectable()
 export class AppService {
@@ -7,12 +8,8 @@ export class AppService {
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     const response = await client.responses.create({
-      model: "gpt-4o-mini",
-      input: `
-        You are a senior software engineer performing code review.
-        Analyze this diff and suggest improvements clearly, using bullet points and examples when relevant.
-        Diff:
-        ${code}`
+      model: "gpt-4.1",
+      input: promptText(code)
     });
 
     return response.output_text;
