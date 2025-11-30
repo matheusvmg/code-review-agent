@@ -1,6 +1,7 @@
 name: Code Review AI
 
 on:
+  push:
   pull_request:
     types: [opened, synchronize, reopened]
 
