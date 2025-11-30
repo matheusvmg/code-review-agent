@@ -5,7 +5,7 @@ import OpenAI from "openai";
 export class AppService {
   async requestReview(code: string): Promise<string> {
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    console.log(JSON.stringify(code, null, 2));
+
     const response = await client.responses.create({
       model: "gpt-4o-mini",
       input: `
@@ -14,7 +14,7 @@ export class AppService {
         Diff:
         ${code}`
     });
-    console.log(JSON.stringify(response, null, 2));
+
     return response.output_text;
   }
 }
