@@ -11,7 +11,7 @@ export class AppService {
       model: "gpt-4.1",
       input: promptText(code)
     });
-
+    console.table(response);
     return response.output_text;
   }
 }
