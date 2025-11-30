@@ -1,7 +1,6 @@
 name: Code Review AI
 
 on:
-  push:
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -30,7 +29,11 @@ jobs:
           RESPONSE=$(curl -s -X POST http://w8gw848s04ssgk8sowc4www4.91.98.166.129.sslip.io/review/webhook \
             -H "Content-Type: application/json" \
             -d "{\"diff\":$DIFF}")
-          echo "result=$RESPONSE" >> $GITHUB_OUTPUT
+          {
+            echo "result<<EOF"
+            echo "$RESPONSE"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: Post result to PR
         env:
