@@ -25,9 +25,10 @@ jobs:
       - name: Call review API
         id: review
         run: |
+          DIFF=$(cat diff.patch | jq -Rs .)
           RESPONSE=$(curl -s -X POST http://w8gw848s04ssgk8sowc4www4.91.98.166.129.sslip.io/review/webhook \
             -H "Content-Type: application/json" \
-            -d "{\"diff\":\"$(sed 's/\"/\\"/g' diff.patch)\"}")
+            -d "{\"diff\":$DIFF}")
           echo "result=$RESPONSE" >> $GITHUB_OUTPUT
 
       - name: Post result to PR
