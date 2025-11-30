@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import OpenAI from "openai";
+import OpenAI from 'openai';
 import { promptText } from './prompt';
 
 @Injectable()
@@ -8,8 +8,8 @@ export class AppService {
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     const response = await client.responses.create({
-      model: "gpt-4.1",
-      input: promptText(code)
+      model: 'gpt-4.1',
+      input: promptText(code),
     });
 
     return response.output_text;
