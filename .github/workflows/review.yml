@@ -10,15 +10,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Get diff
         run: |
-          git diff origin/${{ github.event.pull_request.base.ref }} --unified=3 > diff.patch
+          git fetch origin ${{ github.event.pull_request.base.ref }}
+          git diff FETCH_HEAD --unified=3 > diff.patch
 
       - name: Call review API
         id: review
         run: |
-          RESPONSE=$(curl -s -X POST http://localhost:4589/review/webhook \
+          RESPONSE=$(curl -s -X POST http://w8gw848s04ssgk8sowc4www4.91.98.166.129.sslip.io/review/webhook \
             -H "Content-Type: application/json" \
             -d "{\"diff\":\"$(sed 's/\"/\\"/g' diff.patch)\"}")
           echo "result=$RESPONSE" >> $GITHUB_OUTPUT
