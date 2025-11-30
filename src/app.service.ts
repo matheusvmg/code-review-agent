@@ -5,20 +5,16 @@ import OpenAI from "openai";
 export class AppService {
   async requestReview(code: string): Promise<string> {
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    console.log(JSON.stringify(code, null, 2));
     const response = await client.responses.create({
-      model: "gpt-5-nano",
-      input: code,
-      instructions: `
-      You are a senior code reviewer.
-      Analyze the following DIFF and comment inline with suggestions:
-
-      ### DIFF
-      <DIFF>
-      ${code}
-      </DIFF>
-      ` 
+      model: "gpt-4o-mini",
+      input: `
+        You are a senior software engineer performing code review.
+        Analyze this diff and suggest improvements clearly, using bullet points and examples when relevant.
+        Diff:
+        ${code}`
     });
-    
+    console.log(JSON.stringify(response, null, 2));
     return response.output_text;
   }
 }

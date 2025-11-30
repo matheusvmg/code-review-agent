@@ -1,8 +1,13 @@
 name: Code Review AI
 
 on:
+  push:
   pull_request:
     types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+  contents: write
 
 jobs:
   review:
@@ -10,17 +15,21 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Get diff
         run: |
-          git diff origin/${{ github.event.pull_request.base.ref }} --unified=3 > diff.patch
+          git fetch origin ${{ github.event.pull_request.base.ref }}
+          git diff FETCH_HEAD --unified=3 > diff.patch
 
       - name: Call review API
         id: review
         run: |
-          RESPONSE=$(curl -s -X POST http://localhost:4589/review/webhook \
+          DIFF=$(cat diff.patch | jq -Rs .)
+          RESPONSE=$(curl -s -X POST http://w8gw848s04ssgk8sowc4www4.91.98.166.129.sslip.io/review/webhook \
             -H "Content-Type: application/json" \
-            -d "{\"diff\":\"$(sed 's/\"/\\"/g' diff.patch)\"}")
+            -d "{\"diff\":$DIFF}")
           echo "result=$RESPONSE" >> $GITHUB_OUTPUT
 
       - name: Post result to PR
@@ -28,4 +37,5 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
-            -f body="${{ steps.review.outputs.result }}"
+          -f body='${{ steps.review.outputs.result }}'
+
