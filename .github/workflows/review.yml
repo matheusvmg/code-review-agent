@@ -11,7 +11,7 @@ on:
 
 permissions:
   pull-requests: write
-  contents: write
+  contents: read # Alterado para read (mais seguro)
 
 jobs:
   review:
@@ -24,8 +24,17 @@ jobs:
 
       - name: Get diff
         run: |
+          # Garante que temos a referência da branch base
           git fetch origin ${{ github.event.pull_request.base.ref }}
-          git diff FETCH_HEAD --unified=3 > diff.patch
+          
+          # Gera o diff, mas limita a 4000 linhas para evitar erros de payload excessivo
+          git diff FETCH_HEAD --unified=3 | head -n 4000 > diff.patch
+          
+          # Verifica se o diff não está vazio
+          if [ ! -s diff.patch ]; then
+            echo "Diff is empty or too large handled improperly."
+            exit 0
+          fi
 
       - name: Call review API
         id: review
@@ -34,6 +43,7 @@ jobs:
           RESPONSE=$(curl -s -X POST http://w8gw848s04ssgk8sowc4www4.91.98.166.129.sslip.io/review/webhook \
             -H "Content-Type: application/json" \
             -d "{\"diff\":$DIFF}")
+          # Tratamento seguro para Output Multiline
           {
             echo "result<<EOF"
             echo "$RESPONSE"
@@ -41,6 +51,8 @@ jobs:
           } >> $GITHUB_OUTPUT
 
       - name: Post result to PR
+        # Só executa se o passo anterior (review) teve sucesso
+        if: steps.review.outcome == 'success'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -51,5 +63,6 @@ jobs:
 
           gh api "repos/${{ github.repository }}/issues/$PR_NUMBER/comments" \
             -F body=- << 'EOF'
+          ## 🤖 AI Code Review
           ${{ steps.review.outputs.result }}
           EOF
