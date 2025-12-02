@@ -8,7 +8,7 @@ export class AppService {
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     const response = await client.responses.create({
-      model: "gpt-4.1",
+      model: "gpt-5",
       input: promptText(code)
     });
     console.log(JSON.stringify(response, null, 2));
